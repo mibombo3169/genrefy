@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Genrefy — Müziğini Keşfet</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #0d0d14; color: #fff; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, sans-serif; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; }
+    .bg-glow { position: fixed; width: 600px; height: 600px; border-radius: 50%; filter: blur(150px); opacity: 0.15; pointer-events: none; z-index: 0; }
+    .glow-1 { top: -200px; left: -100px; background: #1db954; }
+    .glow-2 { bottom: -200px; right: -100px; background: #8b5cf6; }
+    .container { position: relative; z-index: 1; text-align: center; max-width: 480px; padding: 0 24px; }
+    .logo { font-size: 56px; margin-bottom: 8px; }
+    h1 { font-size: 42px; font-weight: 800; letter-spacing: -1px; background: linear-gradient(135deg, #1db954, #8b5cf6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 12px; }
+    .tagline { font-size: 18px; color: #a0a0b8; margin-bottom: 48px; line-height: 1.5; }
+    .btn-spotify { display: inline-flex; align-items: center; gap: 12px; background: #1db954; color: #fff; border: none; padding: 16px 40px; border-radius: 50px; font-size: 18px; font-weight: 700; cursor: pointer; transition: all 0.3s ease; text-decoration: none; box-shadow: 0 4px 24px rgba(29,185,84,0.3); }
+    .btn-spotify:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(29,185,84,0.45); background: #1ed760; }
+    .btn-spotify svg { width: 24px; height: 24px; fill: #fff; }
+    .features { display: flex; gap: 32px; margin-top: 56px; justify-content: center; }
+    .feature { text-align: center; }
+    .feature-icon { font-size: 28px; margin-bottom: 8px; }
+    .feature-text { font-size: 13px; color: #6b6b80; line-height: 1.4; }
+    footer { position: fixed; bottom: 24px; font-size: 12px; color: #3a3a4a; z-index: 1; }
+  </style>
+</head>
+<body>
+  <div class="bg-glow glow-1"></div>
+  <div class="bg-glow glow-2"></div>
+  <div class="container">
+    <div class="logo">🎵</div>
+    <h1>Genrefy</h1>
+    <p class="tagline">Spotify beğendiğin şarkıları AI ile<br>genre'larına göre kategorize et</p>
+    <button class="btn-spotify" onclick="login()">
+      <svg viewBox="0 0 24 24"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
+      Spotify ile Bağlan
+    </button>
+    <div class="features">
+      <div class="feature"><div class="feature-icon">📊</div><div class="feature-text">200 şarkıya<br>kadar analiz</div></div>
+      <div class="feature"><div class="feature-icon">🤖</div><div class="feature-text">Claude AI<br>ile sınıflandırma</div></div>
+      <div class="feature"><div class="feature-icon">🎨</div><div class="feature-text">20 farklı<br>genre kategorisi</div></div>
+    </div>
+  </div>
+  <footer>Genrefy &mdash; Spotify + Claude AI</footer>
+  <script>
+    const CLIENT_ID = '923a56a02f15402493d014c52d7da4d6';
+    const REDIRECT_URI = window.location.origin + '/callback.html';
+    const SCOPES = 'user-library-read playlist-read-private user-read-private user-read-email';
+    function generateRandomString(length) {
+      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~';
+      let result = '';
+      const arr = new Uint8Array(length);
+      crypto.getRandomValues(arr);
+      for (let i = 0; i < length; i++) result += chars[arr[i] % chars.length];
+      return result;
+    }
+    async function generateCodeChallenge(verifier) {
+      const encoder = new TextEncoder();
+      const data = encoder.encode(verifier);
+      const digest = await crypto.subtle.digest('SHA-256', data);
+      return btoa(String.fromCharCode(...new Uint8Array(digest))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+    }
+    async function login() {
+      const codeVerifier = generateRandomString(128);
+      const codeChallenge = await generateCodeChallenge(codeVerifier);
+      const state = generateRandomString(16);
+      sessionStorage.setItem('code_verifier', codeVerifier);
+      sessionStorage.setItem('auth_state', state);
+      const params = new URLSearchParams({ client_id: CLIENT_ID, response_type: 'code', redirect_uri: REDIRECT_URI, code_challenge_method: 'S256', code_challenge: codeChallenge, state: state, scope: SCOPES, show_dialog: 'true' });
+      window.location.href = 'https://accounts.spotify.com/authorize?' + params.toString();
+    }
+  </script>
+</body>
+</html>
