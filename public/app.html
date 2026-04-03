@@ -96,7 +96,7 @@
     async function init() {
       try {
         await loadUserProfile();
-        updateProgress(10,'Şarkılar çekiliyor...','Beğenilen şarkılar Spotify'dan alınıyor');
+        updateProgress(10,'Şarkılar çekiliyor...',"Beğenilen şarkılar Spotify'dan alınıyor");
         await fetchLikedTracks();
         if (allTracks.length === 0) { showError('Beğenilen Şarkı Bulunamadı','Spotify kütüphanende beğenilen şarkı yok.'); return; }
         updateProgress(40,'AI analiz ediliyor...',allTracks.length+' şarkı Claude AI ile sınıflandırılıyor');
